@@ -21,6 +21,8 @@ ignoreModules = ['Pods']
 allClsDic = {}
 #要检索的模块中依赖类的集合
 allDepenceSet = set()
+#组件中被依赖的类对应的组件类集合
+moduleClsDic = {}
 #每个类所在的模块
 def searchAllCls(dirPath):
     fileList = os.listdir(dirPath)
@@ -44,41 +46,17 @@ def searchAllCls(dirPath):
 
 #开始运转插件
 def startWork():
-    print('正在迭代该模块之外的耦合关系...')
     searchAllCls(projectPath)
     enumerateModule(modulePath)
-    otherModuleList = getOtherModuleClses()
-    if len(otherModuleList) == 0:
+    otherModuleDic = getOtherModuleClses()
+    if len(otherModuleDic.keys()) == 0:
         print('该模块实现完全解耦')
     else:
         print('该模块依赖的所有其他模块的类如下:')
-        for otherModuleDic in otherModuleList:
-            for key, value in otherModuleDic.items():
-                print('类名:%s, 所属模块为:%s' % (key, value))
+        for key, infoDict in otherModuleDic.items():
+            depencedCls = infoDict['depenced']
+            print('%s，其被%s组件类所依赖， 所属模块为:%s' % (key, ''.join(depencedCls), infoDict['belongModule']))
 
-
-#获取依赖其他模块的类
-def getOtherModuleClses():
-    otherModuduleList = []
-    otherModuleDic = {}
-    for clsName in allDepenceSet:
-        clsModule = allClsDic.get(clsName)
-        if clsModule == '':
-            continue
-        if not isinstance(clsModule, str):
-            continue
-        pattern = r'^' + modulePath
-        regix = re.compile(pattern)
-        match = regix.match(clsModule)
-        if not match:
-            otherModuleDic[clsName] = clsModule
-            isExist = False
-            for dict in otherModuduleList:
-                if clsName in dict.keys():
-                    isExist = True
-            if not isExist:
-                otherModuduleList.append(otherModuleDic)
-    return otherModuduleList
 
 #检索module模块
 def enumerateModule(dirPath):
@@ -95,7 +73,7 @@ def enumerateModule(dirPath):
         else:
             enumerateModule(absolutePath)
 
-#检索依赖了哪些类
+#检索组件依赖了哪些类
 def searchDepenceClses(filePath):
     pathComponents = filePath.split('/')
     temp = pathComponents[len(pathComponents) - 1]
@@ -108,6 +86,28 @@ def searchDepenceClses(filePath):
             depenceCls = match.group(1)
             if not currentName == depenceCls:
                 allDepenceSet.add(depenceCls)
+                
+                if not depenceCls in moduleClsDic.keys():
+                    moduleClsDic[depenceCls] = []
+                moduleLists = moduleClsDic[depenceCls]
+                moduleLists.append(currentName)
+
+#获取依赖其他模块的类
+def getOtherModuleClses():
+    otherModuleDic = {}
+    for clsName in allDepenceSet:
+        clsModule = allClsDic.get(clsName)
+        if clsModule == '':
+            continue
+        if not isinstance(clsModule, str):
+            continue
+        pattern = r'^' + modulePath
+        regix = re.compile(pattern)
+        match = regix.match(clsModule)
+        if not match:
+            infoDict = {'belongModule':clsModule, 'depenced':moduleClsDic[clsName]}
+            otherModuleDic[clsName] = infoDict
+    return otherModuleDic
 
 
 def entry(tempModulePath):
@@ -127,6 +127,8 @@ def main():
 if __name__ == '__main__':
     main()
 
-# entry('/Users/xiaole/GitProject/GitHub/KKTalkee_iPhone/KKTalkee_iPhone/Network')
+# entry('/Users/xiaole/im_ios_sdk/XLLIMClient/XLLIMChat/XLLIMChat/General/Dialog')
+
+
 
 
