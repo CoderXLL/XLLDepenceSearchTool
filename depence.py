@@ -57,13 +57,15 @@ def startWork():
     enumerateModule(modulePath)
     otherModuleDic = getOtherModuleClses()
     print('\n')
+    tempList = modulePath.split('/')
+    moduleName = tempList[len(tempList) - 1]
     if len(otherModuleDic.keys()) == 0:
-        print('该模块实现完全解耦')
+        print('%s组件实现完全解耦' % moduleName)
     else:
-        print('该模块依赖的所有其他模块的类如下:')
+        print('%s组件依赖的所有其他模块信息如下:' % moduleName)
         for key, infoDict in otherModuleDic.items():
             depencedCls = infoDict['depenced']
-            print('%s，其被%s组件类所依赖， 所属模块为:%s' % (key, '、'.join(depencedCls), infoDict['belongModule']))
+            print('%s：其被%s组件类所依赖， 所属模块为:%s' % (key, '、'.join(depencedCls), infoDict['belongModule']))
             print('\n')
 
 
@@ -113,8 +115,7 @@ def getOtherModuleClses():
         if not isinstance(clsModule, str):
             continue
         pattern = r'^' + modulePath
-        regix = re.compile(pattern)
-        match = regix.match(clsModule)
+        match = re.match(pattern, clsModule)
         if not match:
             infoDict = {'belongModule': clsModule, 'depenced': moduleClsDic[clsName]}
             otherModuleDic[clsName] = infoDict
@@ -142,6 +143,7 @@ if __name__ == '__main__':
     main()
 
 # entry('/Users/xiaole/im_ios_sdk/XLLIMClient/XLLIMChat/XLLIMChat/General/Dialog')
+
 
 
 
