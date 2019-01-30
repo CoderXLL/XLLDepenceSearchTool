@@ -10,13 +10,10 @@ import re
 import sys
 
 modulePath = ''
-
-
 # 获取工程路径
 def getProjectPath():
     _selfDirPath = os.path.dirname(os.path.realpath(__file__))
     return _selfDirPath
-
 
 projectPath = getProjectPath()
 # 忽略的模块
@@ -27,7 +24,6 @@ allClsDic = {}
 allDepenceSet = set()
 # 组件中被依赖的类对应的组件类集合
 moduleClsDic = {}
-
 
 # 每个类所在的模块
 def searchAllCls(dirPath):
@@ -50,7 +46,6 @@ def searchAllCls(dirPath):
         else:
             searchAllCls(absolutePath)
 
-
 # 开始运转插件
 def startWork():
     searchAllCls(projectPath)
@@ -68,7 +63,6 @@ def startWork():
             print('%s：其被%s组件类所依赖， 所属模块为:%s' % (key, '、'.join(depencedCls), infoDict['belongModule']))
             print('\n')
 
-
 # 检索module模块
 def enumerateModule(dirPath):
     fileList = os.listdir(dirPath)
@@ -83,7 +77,6 @@ def enumerateModule(dirPath):
                 searchDepenceClses(absolutePath)
         else:
             enumerateModule(absolutePath)
-
 
 # 检索组件依赖了哪些类
 def searchDepenceClses(filePath):
@@ -104,7 +97,6 @@ def searchDepenceClses(filePath):
                 moduleLists = moduleClsDic[depenceCls]
                 moduleLists.append(currentName)
 
-
 # 获取依赖其他模块的类
 def getOtherModuleClses():
     otherModuleDic = {}
@@ -121,12 +113,10 @@ def getOtherModuleClses():
             otherModuleDic[clsName] = infoDict
     return otherModuleDic
 
-
 def entry(tempModulePath):
     global modulePath
     modulePath = tempModulePath
     startWork()
-
 
 def main():
     argvCount = len(sys.argv)
@@ -137,7 +127,6 @@ def main():
         modulePath = sys.argv[1]
         print('正在检索中...')
         startWork()
-
 
 if __name__ == '__main__':
     main()
