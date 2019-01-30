@@ -10,30 +10,36 @@ import re
 import sys
 
 modulePath = ''
-#获取工程路径
+
+
+# 获取工程路径
 def getProjectPath():
     _selfDirPath = os.path.dirname(os.path.realpath(__file__))
     return os.path.dirname(_selfDirPath)
+
+
 projectPath = getProjectPath()
-#忽略的模块
+# 忽略的模块
 ignoreModules = ['Pods']
-#所有类所处的模块map
+# 所有类所处的模块map
 allClsDic = {}
-#要检索的模块中依赖类的集合
+# 要检索的模块中依赖类的集合
 allDepenceSet = set()
-#组件中被依赖的类对应的组件类集合
+# 组件中被依赖的类对应的组件类集合
 moduleClsDic = {}
-#每个类所在的模块
+
+
+# 每个类所在的模块
 def searchAllCls(dirPath):
     fileList = os.listdir(dirPath)
-    #开始迭代
+    # 开始迭代
     for subFile in fileList:
-        #忽略pod文件
+        # 忽略pod文件
         if subFile in ignoreModules:
             continue
-        #拼接全路径
+        # 拼接全路径
         absolutePath = os.path.join(dirPath, subFile)
-        #判断是否为目录
+        # 判断是否为目录
         isDir = os.path.isdir(absolutePath)
         if not isDir:
             pattern = r'^(\w+)\.+[h,m]$'
@@ -44,21 +50,24 @@ def searchAllCls(dirPath):
         else:
             searchAllCls(absolutePath)
 
-#开始运转插件
+
+# 开始运转插件
 def startWork():
     searchAllCls(projectPath)
     enumerateModule(modulePath)
     otherModuleDic = getOtherModuleClses()
+    print('\n')
     if len(otherModuleDic.keys()) == 0:
         print('该模块实现完全解耦')
     else:
         print('该模块依赖的所有其他模块的类如下:')
         for key, infoDict in otherModuleDic.items():
             depencedCls = infoDict['depenced']
-            print('%s，其被%s组件类所依赖， 所属模块为:%s' % (key, ''.join(depencedCls), infoDict['belongModule']))
+            print('%s，其被%s组件类所依赖， 所属模块为:%s' % (key, '、'.join(depencedCls), infoDict['belongModule']))
+            print('\n')
 
 
-#检索module模块
+# 检索module模块
 def enumerateModule(dirPath):
     fileList = os.listdir(dirPath)
     for subFile in fileList:
@@ -68,12 +77,13 @@ def enumerateModule(dirPath):
             pattern = r'^(\w+)\.+[h,m]$'
             match = re.match(pattern, subFile)
             if match:
-                #去检索里面依赖了那些类
+                # 去检索里面依赖了那些类
                 searchDepenceClses(absolutePath)
         else:
             enumerateModule(absolutePath)
 
-#检索组件依赖了哪些类
+
+# 检索组件依赖了哪些类
 def searchDepenceClses(filePath):
     pathComponents = filePath.split('/')
     temp = pathComponents[len(pathComponents) - 1]
@@ -92,7 +102,8 @@ def searchDepenceClses(filePath):
                 moduleLists = moduleClsDic[depenceCls]
                 moduleLists.append(currentName)
 
-#获取依赖其他模块的类
+
+# 获取依赖其他模块的类
 def getOtherModuleClses():
     otherModuleDic = {}
     for clsName in allDepenceSet:
@@ -105,7 +116,7 @@ def getOtherModuleClses():
         regix = re.compile(pattern)
         match = regix.match(clsModule)
         if not match:
-            infoDict = {'belongModule':clsModule, 'depenced':moduleClsDic[clsName]}
+            infoDict = {'belongModule': clsModule, 'depenced': moduleClsDic[clsName]}
             otherModuleDic[clsName] = infoDict
     return otherModuleDic
 
@@ -115,6 +126,7 @@ def entry(tempModulePath):
     modulePath = tempModulePath
     startWork()
 
+
 def main():
     argvCount = len(sys.argv)
     global modulePath
@@ -122,7 +134,9 @@ def main():
         raise AttributeError('请传入正确的参数')
     else:
         modulePath = sys.argv[1]
+        print('正在检索中...')
         startWork()
+
 
 if __name__ == '__main__':
     main()
