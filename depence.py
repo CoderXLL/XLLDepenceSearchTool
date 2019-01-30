@@ -15,7 +15,7 @@ modulePath = ''
 # 获取工程路径
 def getProjectPath():
     _selfDirPath = os.path.dirname(os.path.realpath(__file__))
-    return os.path.dirname(_selfDirPath)
+    return _selfDirPath
 
 
 projectPath = getProjectPath()
